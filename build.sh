@@ -64,7 +64,7 @@ export EXPORTED_FUNCTIONS="[ \
     '_avifDecoderFileRgba' \
 ]"
 
-emcc build/lib${PROJECT_NAME}.a /home/jane/libavif.js/libavif-1.0.4/build/libavif.a /home/jane/emcc_demo/libavif-1.0.4/ext/libyuv/build/libyuv.a libavif-1.0.4/ext/dav1d/build/src/libdav1d.a \
+emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/libyuv/build/libyuv.a libavif-1.0.4/ext/dav1d/build/src/libdav1d.a \
     -s WASM=0 \
     -s WASM_ASYNC_COMPILATION=0 \
     -s EXIT_RUNTIME=0 \
@@ -78,7 +78,7 @@ emcc build/lib${PROJECT_NAME}.a /home/jane/libavif.js/libavif-1.0.4/build/libavi
     -O0 \
     -o lib/${PROJECT_NAME}.js
 
-emcc build/lib${PROJECT_NAME}.a /home/jane/libavif.js/libavif-1.0.4/build/libavif.a /home/jane/emcc_demo/libavif-1.0.4/ext/libyuv/build/libyuv.a libavif-1.0.4/ext/dav1d/build/src/libdav1d.a \
+emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/libyuv/build/libyuv.a libavif-1.0.4/ext/dav1d/build/src/libdav1d.a \
     -s WASM=0 \
     -s WASM_ASYNC_COMPILATION=0 \
     -s EXIT_RUNTIME=0 \
