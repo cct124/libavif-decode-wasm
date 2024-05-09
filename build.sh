@@ -61,7 +61,15 @@ export EXPORTED_FUNCTIONS="[ \
     '_free', \
     '_getAvifVersion', \
     '_cleanupResources', \
-    '_avifDecoderFileRgba' \
+    '_createFrame', \
+    '_avifDecoderFrame', \
+    '_avifDecoderCreate', \
+    '_avifDecoderSetIOMemory', \
+    '_avifDecoderNextImage', \
+    '_avifRGBImageAllocatePixels', \
+    '_avifImageYUVToRGB', \
+    '_avifResultToString', \
+    '_avifDecoderParse' \
 ]"
 
 emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/libyuv/build/libyuv.a libavif-1.0.4/ext/dav1d/build/src/libdav1d.a \

@@ -1,10 +1,8 @@
 extern "C" {
 #include "avif/avif.h"
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 }
-#include <vector>
 
 extern "C" {
 
@@ -25,28 +23,10 @@ struct Frame {
 
 const char *getAvifVersion() { return avifVersion(); }
 
-std::vector<Frame *> *avifDecoderFileRgba(uint8_t *fileBuffer,
-                                          size_t bufferSize, int *framesSize) {
-  avifDecoder *decoder = avifDecoderCreate();
-  if (decoder == NULL) {
-    fprintf(stderr, "Memory allocation failure\n");
-  }
+Frame *createFrame() { return new Frame(); }
 
-  avifResult result = avifDecoderSetIOMemory(decoder, fileBuffer, bufferSize);
-  if (result != AVIF_RESULT_OK) {
-    fprintf(stderr, "Cannot set IO on avifDecoder\n");
-    cleanupResources(decoder);
-  }
-
-  result = avifDecoderParse(decoder);
-  if (result != AVIF_RESULT_OK) {
-    fprintf(stderr, "Failed to parse image\n");
-    cleanupResources(decoder);
-  }
-
-  std::vector<Frame *> *frames = new std::vector<Frame *>();
-
-  while (avifDecoderNextImage(decoder) == AVIF_RESULT_OK) {
+Frame *avifDecoderFrame(avifResult result, avifDecoder *decoder) {
+  if (avifDecoderNextImage(decoder) == AVIF_RESULT_OK) {
     avifRGBImage rgb;
     memset(&rgb, 0, sizeof(rgb));
     Frame *frame = new Frame();
@@ -71,9 +51,8 @@ std::vector<Frame *> *avifDecoderFileRgba(uint8_t *fileBuffer,
     frame->height = rgb.height;
     frame->stride = rgb.rowBytes;
     frame->depth = rgb.depth;
-    frames->push_back(frame);
+    return frame;
   }
-  *framesSize = frames->size();
-  return frames;
+  return nullptr;
 }
 }
