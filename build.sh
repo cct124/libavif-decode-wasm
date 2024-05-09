@@ -18,6 +18,8 @@ fi
 
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/libyuv" ]; then
     git clone --single-branch ${REP_LIBYUV} ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/libyuv
+    cd ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/libyuv
+    git checkout 464c51a0
 fi
 
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d/build" ]; then
@@ -31,7 +33,7 @@ fi
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/libyuv/build" ]; then
     cd ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/libyuv
     emcmake cmake -S . -B build
-    emmake make -C build
+    make -C build
 fi
 
 if [ ! -d "libavif-${LIBAVIF_VERSION}/build" ]; then
@@ -41,7 +43,7 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}/build" ]; then
         -DAVIF_CODEC_DAV1D=ON \
         -DAVIF_LOCAL_LIBYUV=ON \
         -DAVIF_LOCAL_DAV1D=ON
-    emmake make -C build
+    make -C build
     cd ..
 fi
 
