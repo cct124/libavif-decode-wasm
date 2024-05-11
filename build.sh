@@ -83,29 +83,31 @@ export EXPORTED_FUNCTIONS="[ \
 ]"
 
 emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/libyuv/build/libyuv.a libavif-1.0.4/ext/dav1d/build/src/libdav1d.a \
-    -s WASM=0 \
-    -s WASM_ASYNC_COMPILATION=0 \
+    -s WASM=1 \
+    -s WASM_ASYNC_COMPILATION=1 \
     -s EXIT_RUNTIME=0 \
     -s ALLOW_MEMORY_GROWTH=1 \
-    -s ASSERTIONS=0 \
+    -s ASSERTIONS=2 \
     -s INVOKE_RUN=0 \
     -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
     -s DISABLE_EXCEPTION_CATCHING=1 \
     -s EXPORTED_FUNCTIONS="${EXPORTED_FUNCTIONS}" \
     -s EXPORTED_RUNTIME_METHODS="${EXPORTED_RUNTIME_METHODS}" \
     -O0 \
+    -flto \
     -o lib/${PROJECT_NAME}.js
 
 emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/libyuv/build/libyuv.a libavif-1.0.4/ext/dav1d/build/src/libdav1d.a \
-    -s WASM=0 \
-    -s WASM_ASYNC_COMPILATION=0 \
+    -s WASM=1 \
+    -s WASM_ASYNC_COMPILATION=1 \
     -s EXIT_RUNTIME=0 \
     -s ALLOW_MEMORY_GROWTH=1 \
-    -s ASSERTIONS=0 \
+    -s ASSERTIONS=1 \
     -s INVOKE_RUN=0 \
     -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
     -s DISABLE_EXCEPTION_CATCHING=1 \
     -s EXPORTED_FUNCTIONS="${EXPORTED_FUNCTIONS}" \
     -s EXPORTED_RUNTIME_METHODS="${EXPORTED_RUNTIME_METHODS}" \
-    -Os \
+    -O3 \
+    -flto \
     -o lib/${PROJECT_NAME}.min.js
