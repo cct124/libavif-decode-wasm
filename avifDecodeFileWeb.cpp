@@ -5,7 +5,6 @@ extern "C" {
 }
 
 extern "C" {
-
 void cleanupResources(avifDecoder *decoder, avifRGBImage *rgb = nullptr) {
   if (decoder)
     avifDecoderDestroy(decoder);
@@ -19,6 +18,14 @@ struct Frame {
   int height;
   int stride;
   int depth;
+};
+
+struct Timing {
+  double timescale; // 媒体的时间尺度（赫兹）
+  double pts; // 呈现时间戳，以秒为单位（ptsInTimescales / timescale）
+  double ptsInTimescales; // 呈现时间戳在"时间尺度"中的值
+  double duration; // 持续时间，以秒为单位（durationInTimescales / timescale）
+  double durationInTimescales; // 持续时间在"时间尺度"中的值
 };
 
 const char *getAvifVersion() { return avifVersion(); }
@@ -54,5 +61,19 @@ Frame *avifDecoderFrame(avifResult result, avifDecoder *decoder) {
     return frame;
   }
   return nullptr;
+}
+
+int avifImageCount(avifDecoder *decoder) { return decoder->imageCount; }
+
+Timing *avifGetImageTiming(avifDecoder *decoder, int index) {
+  Timing *timing = new Timing();
+  avifImageTiming avifTiming;
+  avifDecoderNthImageTiming(decoder, index, &avifTiming);
+  timing->duration = avifTiming.duration;
+  timing->durationInTimescales = avifTiming.durationInTimescales;
+  timing->ptsInTimescales = avifTiming.ptsInTimescales;
+  timing->pts = avifTiming.pts;
+  timing->timescale = avifTiming.timescale;
+  return timing;
 }
 }

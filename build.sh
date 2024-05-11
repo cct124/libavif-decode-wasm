@@ -50,11 +50,17 @@ fi
 cd ${WORK_PWD}
 rm -rf build
 emcmake cmake -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -S . -B build
-emmake make -C build
+make -C build
 
 if [ ! -d "lib" ]; then
     mkdir lib
 fi
+
+export EXPORTED_RUNTIME_METHODS="[ \
+    'ccall', \
+    'getValue', \
+    'cwrap' \
+]"
 
 export EXPORTED_FUNCTIONS="[ \
     '_memcpy', \
@@ -71,6 +77,8 @@ export EXPORTED_FUNCTIONS="[ \
     '_avifRGBImageAllocatePixels', \
     '_avifImageYUVToRGB', \
     '_avifResultToString', \
+    '_avifImageCount', \
+    '_avifGetImageTiming', \
     '_avifDecoderParse' \
 ]"
 
@@ -84,7 +92,7 @@ emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/
     -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
     -s DISABLE_EXCEPTION_CATCHING=1 \
     -s EXPORTED_FUNCTIONS="${EXPORTED_FUNCTIONS}" \
-    -sEXPORTED_RUNTIME_METHODS=ccall,cwrap \
+    -s EXPORTED_RUNTIME_METHODS="${EXPORTED_RUNTIME_METHODS}" \
     -O0 \
     -o lib/${PROJECT_NAME}.js
 
@@ -98,6 +106,6 @@ emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/
     -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
     -s DISABLE_EXCEPTION_CATCHING=1 \
     -s EXPORTED_FUNCTIONS="${EXPORTED_FUNCTIONS}" \
-    -sEXPORTED_RUNTIME_METHODS=ccall,cwrap \
+    -s EXPORTED_RUNTIME_METHODS="${EXPORTED_RUNTIME_METHODS}" \
     -Os \
     -o lib/${PROJECT_NAME}.min.js
