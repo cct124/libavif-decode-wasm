@@ -68,8 +68,6 @@ export EXPORTED_FUNCTIONS="[ \
     '_malloc', \
     '_free', \
     '_getAvifVersion', \
-    '_cleanupResources', \
-    '_createFrame', \
     '_avifDecoderFrame', \
     '_avifDecoderCreate', \
     '_avifDecoderSetIOMemory', \
@@ -79,6 +77,7 @@ export EXPORTED_FUNCTIONS="[ \
     '_avifResultToString', \
     '_avifImageCount', \
     '_avifGetImageTiming', \
+    '_avifDecoderDestroy', \
     '_avifDecoderParse' \
 ]"
 
@@ -93,6 +92,8 @@ emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/
     -s DISABLE_EXCEPTION_CATCHING=1 \
     -s EXPORTED_FUNCTIONS="${EXPORTED_FUNCTIONS}" \
     -s EXPORTED_RUNTIME_METHODS="${EXPORTED_RUNTIME_METHODS}" \
+    -s STACK_SIZE=2097152 \
+    -s WASM_BIGINT \
     -O0 \
     -flto \
     -o lib/${PROJECT_NAME}.js
@@ -104,10 +105,13 @@ emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/
     -s ALLOW_MEMORY_GROWTH=1 \
     -s ASSERTIONS=1 \
     -s INVOKE_RUN=0 \
+    -s ENVIRONMENT=web \
     -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
     -s DISABLE_EXCEPTION_CATCHING=1 \
     -s EXPORTED_FUNCTIONS="${EXPORTED_FUNCTIONS}" \
     -s EXPORTED_RUNTIME_METHODS="${EXPORTED_RUNTIME_METHODS}" \
+    -s STACK_SIZE=2097152 \
+    -s WASM_BIGINT \
     -O3 \
     -flto \
     -o lib/${PROJECT_NAME}.min.js
