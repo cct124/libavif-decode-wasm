@@ -26,7 +26,9 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d/build" ]; then
     cd ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d
     mkdir build
     cd build
-    meson setup --default-library=static --buildtype release .. --cross-file ${WORK_PWD}/cross_emscripten.ini
+    meson setup --default-library=static --buildtype release \
+        --cross-file ${WORK_PWD}/libavif-1.0.4/ext/dav1d/package/crossfiles/wasm64.meson \
+        -Denable_tools=false -Denable_tests=false
     ninja
 fi
 
