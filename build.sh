@@ -13,7 +13,7 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}" ]; then
 fi
 
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d" ]; then
-    git clone -b 1.2.1 --depth 1 ${REP_DAV1D} ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d
+    git clone -b 1.4.1 --depth 1 ${REP_DAV1D} ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d
 fi
 
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/libyuv" ]; then
@@ -61,6 +61,7 @@ fi
 export EXPORTED_RUNTIME_METHODS="[ \
     'ccall', \
     'getValue', \
+    'UTF8ToString', \
     'cwrap' \
 ]"
 
@@ -69,7 +70,7 @@ export EXPORTED_FUNCTIONS="[ \
     '_memset', \
     '_malloc', \
     '_free', \
-    '_getAvifVersion', \
+    '_avifGetImageTiming', \
     '_avifDecoderFrame', \
     '_avifDecoderCreate', \
     '_avifDecoderSetIOMemory', \
@@ -78,7 +79,6 @@ export EXPORTED_FUNCTIONS="[ \
     '_avifImageYUVToRGB', \
     '_avifResultToString', \
     '_avifImageCount', \
-    '_avifGetImageTiming', \
     '_avifDecoderDestroy', \
     '_avifDecoderParse' \
 ]"
@@ -105,8 +105,10 @@ emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/
     -s WASM_ASYNC_COMPILATION=1 \
     -s EXIT_RUNTIME=0 \
     -s ALLOW_MEMORY_GROWTH=1 \
-    -s ASSERTIONS=1 \
+    -s ASSERTIONS=0 \
     -s INVOKE_RUN=0 \
+    -s MODULARIZE=1 \
+    -s EXPORT_ES6=1 \
     -s ENVIRONMENT=web \
     -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
     -s DISABLE_EXCEPTION_CATCHING=1 \
