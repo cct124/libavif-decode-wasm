@@ -13,7 +13,7 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}" ]; then
 fi
 
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d" ]; then
-    git clone -b 1.2.1 --depth 1 ${REP_DAV1D} ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d
+    git clone -b 1.4.1 --depth 1 ${REP_DAV1D} ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d
 fi
 
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/libyuv" ]; then
@@ -61,6 +61,7 @@ fi
 export EXPORTED_RUNTIME_METHODS="[ \
     'ccall', \
     'getValue', \
+    'UTF8ToString', \
     'cwrap' \
 ]"
 
@@ -69,18 +70,23 @@ export EXPORTED_FUNCTIONS="[ \
     '_memset', \
     '_malloc', \
     '_free', \
-    '_getAvifVersion', \
-    '_avifDecoderFrame', \
+    '_avifGetDecoderImage', \
+    '_avifGetRGBImage', \
+    '_avifGetRGBImagePixels', \
+    '_avifGetRGBImageWidth', \
+    '_avifGetRGBImageHeight', \
+    '_avifGetRGBImageRowBytes', \
+    '_avifGetRGBImageDepth', \
     '_avifDecoderCreate', \
     '_avifDecoderSetIOMemory', \
-    '_avifDecoderNextImage', \
-    '_avifRGBImageAllocatePixels', \
-    '_avifImageYUVToRGB', \
+    '_avifDecoderParse', \
     '_avifResultToString', \
-    '_avifImageCount', \
-    '_avifGetImageTiming', \
-    '_avifDecoderDestroy', \
-    '_avifDecoderParse' \
+    '_avifDecoderNextImage', \
+    '_avifRGBImageSetDefaults', \
+    '_avifRGBImageAllocatePixels', \
+    '_avifRGBImageFreePixels', \
+    '_avifImageYUVToRGB', \
+    '_avifDecoderDestroy' \
 ]"
 
 emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/libyuv/build/libyuv.a libavif-1.0.4/ext/dav1d/build/src/libdav1d.a \
