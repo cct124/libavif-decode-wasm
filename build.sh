@@ -111,8 +111,10 @@ emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/
     -s WASM_ASYNC_COMPILATION=1 \
     -s EXIT_RUNTIME=0 \
     -s ALLOW_MEMORY_GROWTH=1 \
-    -s ASSERTIONS=1 \
+    -s ASSERTIONS=0 \
     -s INVOKE_RUN=0 \
+    -s MODULARIZE=1 \
+    -s EXPORT_ES6=1 \
     -s ENVIRONMENT=web \
     -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
     -s DISABLE_EXCEPTION_CATCHING=1 \
