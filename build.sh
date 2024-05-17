@@ -22,36 +22,52 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/libyuv" ]; then
     git checkout 464c51a0
 fi
 
+rm -rf libavif-${LIBAVIF_VERSION}/ext/dav1d/build
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d/build" ]; then
     cd ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d
     mkdir build
     cd build
     meson setup --default-library=static --buildtype release \
-        --cross-file ${WORK_PWD}/libavif-1.0.4/ext/dav1d/package/crossfiles/wasm64.meson \
+        --cross-file ${WORK_PWD}/cross_emscripten.ini \
         -Denable_tools=false -Denable_tests=false
     ninja
 fi
 
+rm -rf libavif-${LIBAVIF_VERSION}/ext/libyuv/build
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/libyuv/build" ]; then
     cd ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/libyuv
-    emcmake cmake -S . -B build
+    emcmake cmake -S . -B build \
+        -DCMAKE_C_FLAGS="-O3 -flto" \
+        -DCMAKE_CXX_FLAGS="-O3 -flto" \
+        -DCMAKE_EXE_LINKER_FLAGS="-sASSERTIONS=0 -flto"
     make -C build
 fi
 
+rm -rf "libavif-${LIBAVIF_VERSION}/build"
 if [ ! -d "libavif-${LIBAVIF_VERSION}/build" ]; then
     cd ${WORK_PWD}/libavif-${LIBAVIF_VERSION}
     emcmake cmake -S . -B build \
         -DBUILD_SHARED_LIBS=OFF \
         -DAVIF_CODEC_DAV1D=ON \
         -DAVIF_LOCAL_LIBYUV=ON \
-        -DAVIF_LOCAL_DAV1D=ON
+        -DAVIF_LOCAL_DAV1D=ON \
+        -DCMAKE_C_FLAGS="-O3 -flto" \
+        -DCMAKE_CXX_FLAGS="-O3 -flto" \
+        -DCMAKE_EXE_LINKER_FLAGS="-sASSERTIONS=0 -flto"
     make -C build
     cd ..
 fi
 
 cd ${WORK_PWD}
 rm -rf build
-emcmake cmake -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -S . -B build
+emcmake cmake -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -S . -B build \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DAVIF_CODEC_DAV1D=ON \
+    -DAVIF_LOCAL_LIBYUV=ON \
+    -DAVIF_LOCAL_DAV1D=ON \
+    -DCMAKE_C_FLAGS="-O3 -flto" \
+    -DCMAKE_CXX_FLAGS="-O3 -flto" \
+    -DCMAKE_EXE_LINKER_FLAGS="-sASSERTIONS=0 -flto"
 make -C build
 
 if [ ! -d "lib" ]; then
@@ -77,6 +93,8 @@ export EXPORTED_FUNCTIONS="[ \
     '_avifGetRGBImageHeight', \
     '_avifGetRGBImageRowBytes', \
     '_avifGetRGBImageDepth', \
+    '_avifGetImageTiming', \
+    '_avifGetImageCount', \
     '_avifDecoderCreate', \
     '_avifDecoderSetIOMemory', \
     '_avifDecoderParse', \
@@ -86,6 +104,8 @@ export EXPORTED_FUNCTIONS="[ \
     '_avifRGBImageAllocatePixels', \
     '_avifRGBImageFreePixels', \
     '_avifImageYUVToRGB', \
+    '_avifVersion', \
+    '_avifDecoderNthImageTiming', \
     '_avifDecoderDestroy' \
 ]"
 
@@ -94,8 +114,10 @@ emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/
     -s WASM_ASYNC_COMPILATION=1 \
     -s EXIT_RUNTIME=0 \
     -s ALLOW_MEMORY_GROWTH=1 \
-    -s ASSERTIONS=2 \
+    -s ASSERTIONS=0 \
     -s INVOKE_RUN=0 \
+    -s SINGLE_FILE=1 \
+    -s ENVIRONMENT=worker \
     -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
     -s DISABLE_EXCEPTION_CATCHING=1 \
     -s EXPORTED_FUNCTIONS="${EXPORTED_FUNCTIONS}" \
@@ -113,15 +135,18 @@ emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/
     -s ALLOW_MEMORY_GROWTH=1 \
     -s ASSERTIONS=0 \
     -s INVOKE_RUN=0 \
-    -s MODULARIZE=1 \
-    -s EXPORT_ES6=1 \
-    -s ENVIRONMENT=web \
+    -s SINGLE_FILE=1 \
+    -s ENVIRONMENT=worker \
     -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
     -s DISABLE_EXCEPTION_CATCHING=1 \
     -s EXPORTED_FUNCTIONS="${EXPORTED_FUNCTIONS}" \
     -s EXPORTED_RUNTIME_METHODS="${EXPORTED_RUNTIME_METHODS}" \
-    -s STACK_SIZE=2097152 \
+    -s STACK_SIZE=4194304 \
     -s WASM_BIGINT \
+    -s MODULARIZE=1 \
+    -s EXPORT_ES6=1 \
+    -s USE_ES6_IMPORT_META=0 \
+    -s EXPORT_NAME='Libavif' \
     -O3 \
     -flto \
     -o lib/${PROJECT_NAME}.min.js
