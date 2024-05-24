@@ -39,7 +39,7 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/libyuv/build" ]; then
     cd ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/libyuv
     emcmake cmake -S . -B build \
         -DCMAKE_C_FLAGS="-O3 -flto" \
-        -DCMAKE_CXX_FLAGS="-O3 -sASSERTIONS=0 -sWASM_BIGINT=1 -flto" \
+        -DCMAKE_CXX_FLAGS="-O3 -flto" \
         -DCMAKE_EXE_LINKER_FLAGS="-O3 -sASSERTIONS=0 -sWASM_BIGINT=1 -flto"
     make -C build
 fi
@@ -53,7 +53,7 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}/build" ]; then
         -DAVIF_LOCAL_LIBYUV=ON \
         -DAVIF_LOCAL_DAV1D=ON \
         -DCMAKE_C_FLAGS="-O3 -flto" \
-        -DCMAKE_CXX_FLAGS="-O3 -sASSERTIONS=0 -sWASM_BIGINT=1 -flto" \
+        -DCMAKE_CXX_FLAGS="-O3 -flto" \
         -DCMAKE_EXE_LINKER_FLAGS="-O3 -sASSERTIONS=0 -sWASM_BIGINT=1 -flto"
     make -C build
     cd ..
@@ -67,8 +67,8 @@ emcmake cmake -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -S . -B build \
     -DAVIF_LOCAL_LIBYUV=ON \
     -DAVIF_LOCAL_DAV1D=ON \
     -DCMAKE_C_FLAGS="-O3 -flto" \
-    -DCMAKE_CXX_FLAGS="-O3 -sASSERTIONS=0 -sWASM_BIGINT=1 -flto" \
-    -DCMAKE_EXE_LINKER_FLAGS="-O3 -sASSERTIONS=0 -sWASM_BIGINT=1 -flto"
+    -DCMAKE_CXX_FLAGS="-O3 -flto" \
+    -DCMAKE_EXE_LINKER_FLAGS="-O3 -sASSERTIONS=0 -sWASM_BIGINT=1 -flto --bind"
 make -C build
 
 if [ ! -d "lib" ]; then
@@ -107,6 +107,9 @@ export EXPORTED_FUNCTIONS="[ \
     '_avifImageYUVToRGB', \
     '_avifVersion', \
     '_avifDecoderNthImageTiming', \
+    '_avifGetCreateImage', \
+    '_avifGetCopyImage', \
+    '_avifGetImageToRGBImage', \
     '_avifDecoderDestroy' \
 ]"
 
@@ -150,4 +153,5 @@ emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/
     -s EXPORT_NAME='Libavif' \
     -O3 \
     -flto \
+    --bind \
     -o lib/${PROJECT_NAME}.min.js
