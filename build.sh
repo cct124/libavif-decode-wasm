@@ -68,7 +68,7 @@ emcmake cmake -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -S . -B build \
     -DAVIF_LOCAL_DAV1D=ON \
     -DCMAKE_C_FLAGS="-O3 -flto" \
     -DCMAKE_CXX_FLAGS="-O3 -flto" \
-    -DCMAKE_EXE_LINKER_FLAGS="-O3 -sASSERTIONS=0 -sWASM_BIGINT=1 -flto --bind"
+    -DCMAKE_EXE_LINKER_FLAGS="-O3 -sASSERTIONS=0 -sWASM_BIGINT=1 -flto"
 make -C build
 
 if [ ! -d "lib" ]; then
@@ -110,6 +110,15 @@ export EXPORTED_FUNCTIONS="[ \
     '_avifGetCreateImage', \
     '_avifGetCopyImage', \
     '_avifGetImageToRGBImage', \
+    '_avifDecoderNthImage', \
+    '_avifCreateAvifImageCache', \
+    '_avifInitializeCacheEntry', \
+    '_avifCacheImage', \
+    '_avifGetCacheImage', \
+    '_avifCacheImagePrintCache', \
+    '_avifSetDecoderMaxThreads', \
+    '_avifGetImageWidth', \
+    '_avifGetImageHeight', \
     '_avifDecoderDestroy' \
 ]"
 
@@ -153,5 +162,4 @@ emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/
     -s EXPORT_NAME='Libavif' \
     -O3 \
     -flto \
-    --bind \
     -o lib/${PROJECT_NAME}.min.js

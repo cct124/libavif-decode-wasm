@@ -1,37 +1,58 @@
-#include <emscripten/bind.h>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 extern "C" {
 #include "avif/avif.h"
 #include "string.h"
 #include <stdlib.h>
-
-using namespace emscripten;
+}
 
 class AvifImageCache {
 public:
   ~AvifImageCache() { clearCache(); }
 
-  void cacheImage(const std::string &id, avifImage *image, int index) {
-    auto it = cache.find(id);
-    if (it == cache.end()) {
-      throw std::runtime_error("Cache entry not initialized for ID: " + id);
+  // 函数用于打印 std::unordered_map<std::string, CacheEntry>
+  void printCache() {
+    for (const auto &pair : cache) {
+      for (const auto &pair : cache) {
+        std::cout << pair.first + " => " + std::to_string(pair.second.count)
+                  << std::endl;
+      }
     }
-    CacheEntry &entry = it->second;
-    if (index < 0 || index >= entry.count) {
-      throw std::out_of_range("Index out of bounds: " + std::to_string(index));
-    }
-    entry.images[index] = image;
   }
 
-  void initializeCacheEntry(const std::string &id, int count) {
+  void cacheImage(const char *id, avifImage *image, int index) {
+    try {
+      auto it = cache.find(id);
+      if (it == cache.end()) {
+        char errorMessage[256]; // 确定足够大的缓冲区来存储消息
+        snprintf(errorMessage, sizeof(errorMessage),
+                 "Cache entry not initialized for ID: %s", id);
+        throw std::runtime_error(errorMessage);
+      }
+      CacheEntry &entry = it->second;
+      if (index < 0 || index >= entry.count) {
+        throw std::out_of_range("Index out of bounds: " +
+                                std::to_string(index));
+      }
+      entry.images[index] = image;
+    } catch (const std::exception &e) {
+      // 处理异常，例如记录错误信息或回退操作
+      std::cerr << "Exception caught: " << e.what() << std::endl;
+    }
+  }
+
+  void initializeCacheEntry(const char *id, int count) {
+    if (count <= 0) {
+      throw std::invalid_argument("Count must be greater than zero.");
+    }
     clearCacheForId(id); // 清理现有的缓存条目（如果存在）
     avifImage **images = new avifImage *[count]();
     cache[id] = {images, count};
   }
 
-  avifImage **getImages(const std::string &id, int count) {
+  avifImage **getImages(const char *id, int count) {
     auto it = cache.find(id);
     if (it == cache.end()) {
       count = 0;
@@ -41,7 +62,7 @@ public:
     return it->second.images;
   }
 
-  avifImage *getImage(const std::string &id, int index) {
+  avifImage *getImage(const char *id, int index) {
     auto it = cache.find(id);
     if (it == cache.end()) {
       // 如果找不到指定ID的缓存条目，返回nullptr
@@ -60,7 +81,7 @@ public:
     return entry.images[index];
   }
 
-  void clearCacheForId(const std::string &id) {
+  void clearCacheForId(const char *id) {
     auto it = cache.find(id);
     if (it != cache.end()) {
       for (size_t i = 0; i < it->second.count; ++i) {
@@ -90,6 +111,8 @@ private:
   std::unordered_map<std::string, CacheEntry> cache;
 };
 
+extern "C" {
+
 typedef struct Timing {
   double timescale;
   double pts;
@@ -99,6 +122,10 @@ typedef struct Timing {
 } Timing;
 
 avifImage *avifGetDecoderImage(avifDecoder *decoder) { return decoder->image; };
+
+void avifSetDecoderMaxThreads(avifDecoder *decoder, int maxThreads) {
+  decoder->maxThreads = maxThreads;
+}
 
 avifRGBImage *avifGetRGBImage() {
   // 使用 malloc 分配内存
@@ -178,15 +205,27 @@ int avifGetRGBImageHeight(avifRGBImage *rgb) { return rgb->height; };
 int avifGetRGBImageRowBytes(avifRGBImage *rgb) { return rgb->rowBytes; };
 int avifGetRGBImageDepth(avifRGBImage *rgb) { return rgb->depth; };
 int avifGetImageCount(avifDecoder *decoder) { return decoder->imageCount; }
+int avifGetImageWidth(avifDecoder *decoder) { return decoder->image->width; }
+int avifGetImageHeight(avifDecoder *decoder) { return decoder->image->height; }
 
-EMSCRIPTEN_BINDINGS(AvifImageCache_bindings) {
-  class_<AvifImageCache>("AvifImageCache")
-      .constructor<>()
-      .function("cacheImage", &AvifImageCache::cacheImage,
-                allow_raw_pointers()) // 允许原始指针
-      .function("getImage", &AvifImageCache::getImage,
-                allow_raw_pointers()) // 允许原始指针
-      .function("initializeCacheEntry", &AvifImageCache::initializeCacheEntry)
-      .function("clearCache", &AvifImageCache::clearCache);
+AvifImageCache *avifCreateAvifImageCache() { return new AvifImageCache(); };
+
+void avifInitializeCacheEntry(AvifImageCache *avifImageCache, const char *id,
+                              int count) {
+  avifImageCache->initializeCacheEntry(id, count);
+}
+
+void avifCacheImage(AvifImageCache *avifImageCache, const char *id,
+                    avifImage *image, int index) {
+  avifImageCache->cacheImage(id, image, index);
+}
+
+void avifCacheImagePrintCache(AvifImageCache *avifImageCache) {
+  avifImageCache->printCache();
+}
+
+avifImage *avifGetCacheImage(AvifImageCache *avifImageCache, const char *id,
+                             int index) {
+  return avifImageCache->getImage(id, index);
 }
 }
