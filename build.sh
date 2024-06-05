@@ -34,15 +34,21 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d/build" ]; then
     ninja
 fi
 
+CMAKE_FLAGS=(
+    -DCMAKE_C_FLAGS=-O3\ -flto
+    -DCMAKE_CXX_FLAGS=-O3\ -flto
+    -DCMAKE_EXE_LINKER_FLAGS=-O3\ -sASSERTIONS=0\ -flto
+)
+
 rm -rf libavif-${LIBAVIF_VERSION}/ext/libyuv/build
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/libyuv/build" ]; then
     cd ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/libyuv
     emcmake cmake -S . -B build \
-        -DCMAKE_C_FLAGS="-O3 -flto" \
-        -DCMAKE_CXX_FLAGS="-O3 -flto" \
-        -DCMAKE_EXE_LINKER_FLAGS="-O3 -sASSERTIONS=0 -sWASM_BIGINT=1 -flto"
+    "${CMAKE_FLAGS[@]}"
     make -C build
 fi
+
+
 
 rm -rf "libavif-${LIBAVIF_VERSION}/build"
 if [ ! -d "libavif-${LIBAVIF_VERSION}/build" ]; then
@@ -52,9 +58,7 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}/build" ]; then
         -DAVIF_CODEC_DAV1D=ON \
         -DAVIF_LOCAL_LIBYUV=ON \
         -DAVIF_LOCAL_DAV1D=ON \
-        -DCMAKE_C_FLAGS="-O3 -flto" \
-        -DCMAKE_CXX_FLAGS="-O3 -flto" \
-        -DCMAKE_EXE_LINKER_FLAGS="-O3 -sASSERTIONS=0 -sWASM_BIGINT=1 -flto"
+        "${CMAKE_FLAGS[@]}"
     make -C build
     cd ..
 fi
@@ -62,13 +66,7 @@ fi
 cd ${WORK_PWD}
 rm -rf build
 emcmake cmake -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -S . -B build \
-    -DBUILD_SHARED_LIBS=OFF \
-    -DAVIF_CODEC_DAV1D=ON \
-    -DAVIF_LOCAL_LIBYUV=ON \
-    -DAVIF_LOCAL_DAV1D=ON \
-    -DCMAKE_C_FLAGS="-O3 -flto" \
-    -DCMAKE_CXX_FLAGS="-O3 -flto" \
-    -DCMAKE_EXE_LINKER_FLAGS="-O3 -sASSERTIONS=0 -sWASM_BIGINT=1 -flto"
+    "${CMAKE_FLAGS[@]}"
 make -C build
 
 if [ ! -d "lib" ]; then
@@ -107,15 +105,9 @@ export EXPORTED_FUNCTIONS="[ \
     '_avifImageYUVToRGB', \
     '_avifVersion', \
     '_avifDecoderNthImageTiming', \
-    '_avifGetCreateImage', \
     '_avifGetCopyImage', \
     '_avifGetImageToRGBImage', \
     '_avifDecoderNthImage', \
-    '_avifCreateAvifImageCache', \
-    '_avifInitializeCacheEntry', \
-    '_avifCacheImage', \
-    '_avifGetCacheImage', \
-    '_avifCacheImagePrintCache', \
     '_avifSetDecoderMaxThreads', \
     '_avifGetImageWidth', \
     '_avifGetImageHeight', \
@@ -155,7 +147,7 @@ emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/
     -s EXPORTED_FUNCTIONS="${EXPORTED_FUNCTIONS}" \
     -s EXPORTED_RUNTIME_METHODS="${EXPORTED_RUNTIME_METHODS}" \
     -s STACK_SIZE=4194304 \
-    -s WASM_BIGINT=1 \
+    -s INITIAL_MEMORY=67108864 \
     -s MODULARIZE=1 \
     -s EXPORT_ES6=1 \
     -s USE_ES6_IMPORT_META=0 \

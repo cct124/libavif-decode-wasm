@@ -14,7 +14,7 @@ enable_testing()
 include_directories(${LIBAVIF_HEADERS_DIR})
 include_directories(${EMSCRIPTEN_HEADERS_DIR})
 link_directories(${LIBAVIF_LIBS_DIR})
-add_library(${PROJECT_NAME} avifDecodeFileWeb.cpp)
+add_library(${PROJECT_NAME} avifDecodeFileWeb.c)
 target_link_libraries(${PROJECT_NAME} libavif)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
