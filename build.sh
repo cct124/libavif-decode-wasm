@@ -15,6 +15,7 @@ fi
 
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d" ]; then
     git clone -b 1.4.1 --depth 1 ${REP_DAV1D} ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d
+    cp ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d/meson.build ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d/meson.back.build
 fi
 
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/libyuv" ]; then
@@ -25,12 +26,13 @@ fi
 
 rm -rf libavif-${LIBAVIF_VERSION}/ext/dav1d/build
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d/build" ]; then
+    cp ${WORK_PWD}/meson.build ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d/meson.build
     cd ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d
     mkdir build
     cd build
     meson setup --default-library=static --buildtype release \
         --cross-file ${WORK_PWD}/cross_emscripten.ini \
-        -Denable_tools=false -Denable_tests=false
+        -Denable_tools=false -Denable_tests=false -Dbitdepths=8 -Denable_asm=true -Dlogging=false
     ninja
 fi
 
@@ -58,6 +60,7 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}/build" ]; then
         -DAVIF_CODEC_DAV1D=ON \
         -DAVIF_LOCAL_LIBYUV=ON \
         -DAVIF_LOCAL_DAV1D=ON \
+        -DENABLE_MULTITHREAD=OFF \
         "${CMAKE_FLAGS[@]}"
     make -C build
     cd ..
