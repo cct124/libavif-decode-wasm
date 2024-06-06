@@ -32,8 +32,8 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d/build" ]; then
     cd build
     meson setup --default-library=static --buildtype release \
         --cross-file ${WORK_PWD}/cross_emscripten.ini \
-        -Denable_tools=false -Denable_tests=false -Dbitdepths=8 -Denable_asm=true -Dlogging=false
-    ninja
+        -Denable_tools=false -Denable_tests=false -Dbitdepths=8 -Dlogging=false
+    ninja -j$(nproc)
 fi
 
 CMAKE_FLAGS=(
@@ -45,9 +45,9 @@ CMAKE_FLAGS=(
 rm -rf libavif-${LIBAVIF_VERSION}/ext/libyuv/build
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/libyuv/build" ]; then
     cd ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/libyuv
-    emcmake cmake -S . -B build \
+    emcmake cmake -S . -DCMAKE_BUILD_TYPE=Release -B build \
     "${CMAKE_FLAGS[@]}"
-    make -C build
+    make -C build -j$(nproc)
 fi
 
 
@@ -62,7 +62,7 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}/build" ]; then
         -DAVIF_LOCAL_DAV1D=ON \
         -DENABLE_MULTITHREAD=OFF \
         "${CMAKE_FLAGS[@]}"
-    make -C build
+    make -C build -j$(nproc)
     cd ..
 fi
 
@@ -70,7 +70,7 @@ cd ${WORK_PWD}
 rm -rf build
 emcmake cmake -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -S . -B build \
     "${CMAKE_FLAGS[@]}"
-make -C build
+make -C build -j$(nproc)
 
 if [ ! -d "lib" ]; then
     mkdir lib
@@ -117,44 +117,21 @@ export EXPORTED_FUNCTIONS="[ \
     '_avifDecoderDestroy' \
 ]"
 
-# emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/libyuv/build/libyuv.a libavif-1.0.4/ext/dav1d/build/src/libdav1d.a \
-#     -s WASM=1 \
-#     -s WASM_ASYNC_COMPILATION=1 \
-#     -s EXIT_RUNTIME=0 \
-#     -s ALLOW_MEMORY_GROWTH=1 \
-#     -s ASSERTIONS=0 \
-#     -s INVOKE_RUN=0 \
-#     -s SINGLE_FILE=1 \
-#     -s ENVIRONMENT=worker \
-#     -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
-#     -s DISABLE_EXCEPTION_CATCHING=1 \
-#     -s EXPORTED_FUNCTIONS="${EXPORTED_FUNCTIONS}" \
-#     -s EXPORTED_RUNTIME_METHODS="${EXPORTED_RUNTIME_METHODS}" \
-#     -s STACK_SIZE=2097152 \
-#     -s WASM_BIGINT \
-#     -O0 \
-#     -flto \
-#     -o lib/${PROJECT_NAME}.js
-
 emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/libyuv/build/libyuv.a libavif-1.0.4/ext/dav1d/build/src/libdav1d.a \
     -s WASM=1 \
     -s WASM_ASYNC_COMPILATION=1 \
-    -s EXIT_RUNTIME=0 \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s ASSERTIONS=0 \
-    -s INVOKE_RUN=0 \
     -s SINGLE_FILE=1 \
     -s ENVIRONMENT=worker \
-    -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
-    -s DISABLE_EXCEPTION_CATCHING=1 \
     -s EXPORTED_FUNCTIONS="${EXPORTED_FUNCTIONS}" \
     -s EXPORTED_RUNTIME_METHODS="${EXPORTED_RUNTIME_METHODS}" \
     -s STACK_SIZE=4194304 \
-    -s INITIAL_MEMORY=67108864 \
     -s MODULARIZE=1 \
     -s EXPORT_ES6=1 \
     -s USE_ES6_IMPORT_META=0 \
     -s EXPORT_NAME='Libavif' \
     -O3 \
     -flto \
+    -j$(nproc) \
     -o lib/${PROJECT_NAME}.min.js

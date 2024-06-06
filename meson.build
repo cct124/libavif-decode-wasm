@@ -60,6 +60,8 @@ foreach bitdepth : ['8', '16']
     cdata.set10('CONFIG_@0@BPC'.format(bitdepth), dav1d_bitdepths.contains(bitdepth))
 endforeach
 
+# Disable ASM for Emscripten
+is_asm_enabled = false
 # ASM option
 is_asm_enabled = (get_option('enable_asm') == true and
     (host_machine.cpu_family() == 'aarch64' or
@@ -90,6 +92,11 @@ test_args = []
 
 optional_arguments = []
 optional_link_arguments = []
+
+if host_machine.system() == 'emscripten'
+    # Additional configuration for Emscripten
+    test_args += ['-s USE_PTHREADS=0']  # Disable pthreads if not used
+endif
 
 if host_machine.system() in ['linux', 'gnu', 'emscripten']
     test_args += '-D_GNU_SOURCE'
@@ -142,15 +149,15 @@ else
     thread_compat_dep = []
 
     rt_dependency = []
-    if cc.has_function('clock_gettime', prefix : '#include <time.h>', args : test_args)
-        cdata.set('HAVE_CLOCK_GETTIME', 1)
-    elif host_machine.system() not in ['darwin', 'ios', 'tvos']
-        rt_dependency = cc.find_library('rt', required: false)
-        if not cc.has_function('clock_gettime', prefix : '#include <time.h>', args : test_args, dependencies : rt_dependency)
-            error('clock_gettime not found')
-        endif
-        cdata.set('HAVE_CLOCK_GETTIME', 1)
-    endif
+   # if cc.has_function('clock_gettime', prefix : '#include <time.h>', args : test_args)
+   #     cdata.set('HAVE_CLOCK_GETTIME', 1)
+   # elif host_machine.system() not in ['darwin', 'ios', 'tvos']
+   #     rt_dependency = cc.find_library('rt', required: false)
+   #     if not cc.has_function('clock_gettime', prefix : '#include <time.h>', args : test_args, dependencies : rt_dependency)
+   #         error('clock_gettime not found')
+   #     endif
+   #     cdata.set('HAVE_CLOCK_GETTIME', 1)
+   # endif
     
     if cc.has_function('posix_memalign', prefix : '#include <stdlib.h>', args : test_args)
         cdata.set('HAVE_POSIX_MEMALIGN', 1)
