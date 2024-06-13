@@ -60,8 +60,6 @@ foreach bitdepth : ['8', '16']
     cdata.set10('CONFIG_@0@BPC'.format(bitdepth), dav1d_bitdepths.contains(bitdepth))
 endforeach
 
-# Disable ASM for Emscripten
-is_asm_enabled = false
 # ASM option
 is_asm_enabled = (get_option('enable_asm') == true and
     (host_machine.cpu_family() == 'aarch64' or
@@ -145,19 +143,19 @@ if host_machine.system() == 'windows'
     rc_data.set('API_VERSION_REVISION', dav1d_api_version_revision)
     rc_data.set('COPYRIGHT_YEARS', '2018-2024')
 else
-    thread_dependency = []
+    thread_dependency = dependency('threads')
     thread_compat_dep = []
 
     rt_dependency = []
-   # if cc.has_function('clock_gettime', prefix : '#include <time.h>', args : test_args)
-   #     cdata.set('HAVE_CLOCK_GETTIME', 1)
-   # elif host_machine.system() not in ['darwin', 'ios', 'tvos']
-   #     rt_dependency = cc.find_library('rt', required: false)
-   #     if not cc.has_function('clock_gettime', prefix : '#include <time.h>', args : test_args, dependencies : rt_dependency)
-   #         error('clock_gettime not found')
-   #     endif
-   #     cdata.set('HAVE_CLOCK_GETTIME', 1)
-   # endif
+    if cc.has_function('clock_gettime', prefix : '#include <time.h>', args : test_args)
+        cdata.set('HAVE_CLOCK_GETTIME', 1)
+    elif host_machine.system() not in ['darwin', 'ios', 'tvos']
+        rt_dependency = cc.find_library('rt', required: false)
+        if not cc.has_function('clock_gettime', prefix : '#include <time.h>', args : test_args, dependencies : rt_dependency)
+            error('clock_gettime not found')
+        endif
+        cdata.set('HAVE_CLOCK_GETTIME', 1)
+    endif
     
     if cc.has_function('posix_memalign', prefix : '#include <stdlib.h>', args : test_args)
         cdata.set('HAVE_POSIX_MEMALIGN', 1)
@@ -193,26 +191,26 @@ libm_dependency = cc.find_library('m', required: false)
 # Header checks
 
 stdatomic_dependencies = []
-# if not cc.check_header('stdatomic.h')
-#     if cc.get_id() == 'msvc'
-#         # we have a custom replacement for MSVC
-#         stdatomic_dependencies += declare_dependency(
-#             include_directories : include_directories('include/compat/msvc'),
-#         )
-#     elif cc.compiles('''int main() { int v = 0; return __atomic_fetch_add(&v, 1, __ATOMIC_SEQ_CST); }''',
-#                      name : 'GCC-style atomics', args : test_args)
-#         stdatomic_dependencies += declare_dependency(
-#             include_directories : include_directories('include/compat/gcc'),
-#         )
-#     else
-#         error('Atomics not supported')
-#     endif
-# endif
+if not cc.check_header('stdatomic.h')
+    if cc.get_id() == 'msvc'
+        # we have a custom replacement for MSVC
+        stdatomic_dependencies += declare_dependency(
+            include_directories : include_directories('include/compat/msvc'),
+        )
+    elif cc.compiles('''int main() { int v = 0; return __atomic_fetch_add(&v, 1, __ATOMIC_SEQ_CST); }''',
+                     name : 'GCC-style atomics', args : test_args)
+        stdatomic_dependencies += declare_dependency(
+            include_directories : include_directories('include/compat/gcc'),
+        )
+    else
+        error('Atomics not supported')
+    endif
+endif
 
-# if host_machine.cpu_family().startswith('wasm')
-#     # enable atomics + bulk-memory features
-#     stdatomic_dependencies += thread_dependency.partial_dependency(compile_args: true)
-# endif
+if host_machine.cpu_family().startswith('wasm')
+    # enable atomics + bulk-memory features
+    stdatomic_dependencies += thread_dependency.partial_dependency(compile_args: true)
+endif
 
 if cc.check_header('unistd.h')
     cdata.set('HAVE_UNISTD_H', 1)

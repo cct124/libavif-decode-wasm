@@ -26,12 +26,10 @@ fi
 
 rm -rf libavif-${LIBAVIF_VERSION}/ext/dav1d/build
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d/build" ]; then
-    cp ${WORK_PWD}/meson.build ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d/meson.build
     cd ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d
     mkdir build
     cd build
     meson setup --default-library=static --buildtype release \
-        --cross-file ${WORK_PWD}/cross_emscripten.ini \
         -Denable_tools=false -Denable_tests=false -Dbitdepths=8 -Dlogging=false
     ninja -j$(nproc)
 fi
@@ -122,7 +120,6 @@ emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/
     -s WASM_ASYNC_COMPILATION=1 \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s ASSERTIONS=0 \
-    -s SINGLE_FILE=1 \
     -s ENVIRONMENT=worker \
     -s EXPORTED_FUNCTIONS="${EXPORTED_FUNCTIONS}" \
     -s EXPORTED_RUNTIME_METHODS="${EXPORTED_RUNTIME_METHODS}" \
