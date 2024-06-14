@@ -114,7 +114,13 @@ export EXPORTED_FUNCTIONS="[ \
     '_avifSetDecoderMaxThreads', \
     '_avifGetImageWidth', \
     '_avifGetImageHeight', \
-    '_avifDecoderDestroy' \
+    '_avifDecoderDestroy', \
+    '_avifIOCreateStreamingReader', \
+    '_avifDecoderSetIO', \
+    '_avifSetDownloadedBytes', \
+    '_avifGetDownloadedBytes', \
+    '_avifGetSizeHint', \
+    '_avifSetDecoderExifXMP'
 ]"
 
 emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/libyuv/build/libyuv.a libavif-1.0.4/ext/dav1d/build/src/libdav1d.a \
