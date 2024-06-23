@@ -37,9 +37,9 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d/build" ]; then
 fi
 
 CMAKE_FLAGS=(
-    -DCMAKE_C_FLAGS=-O3\ -flto
-    -DCMAKE_CXX_FLAGS=-O3\ -flto
-    -DCMAKE_EXE_LINKER_FLAGS=-O3\ -sASSERTIONS=0\ -flto
+    # -DCMAKE_C_FLAGS=-O3\ -flto
+    # -DCMAKE_CXX_FLAGS=-O3\ -flto
+    # -DCMAKE_EXE_LINKER_FLAGS=-O3\ -sASSERTIONS=0\ -sINLINING_LIMIT=1\ -flto
 )
 
 rm -rf libavif-${LIBAVIF_VERSION}/ext/libyuv/build
@@ -114,7 +114,13 @@ export EXPORTED_FUNCTIONS="[ \
     '_avifSetDecoderMaxThreads', \
     '_avifGetImageWidth', \
     '_avifGetImageHeight', \
-    '_avifDecoderDestroy' \
+    '_avifDecoderDestroy', \
+    '_avifIOCreateStreamingReader', \
+    '_avifDecoderSetIO', \
+    '_avifSetDownloadedBytes', \
+    '_avifGetDownloadedBytes', \
+    '_avifGetSizeHint', \
+    '_avifSetDecoderExifXMP'
 ]"
 
 emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/libyuv/build/libyuv.a libavif-1.0.4/ext/dav1d/build/src/libdav1d.a \
@@ -131,6 +137,7 @@ emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/
     -s EXPORT_ES6=1 \
     -s USE_ES6_IMPORT_META=0 \
     -s EXPORT_NAME='Libavif' \
+    -s INLINING_LIMIT=1 \
     -O3 \
     -flto \
     -j$(nproc) \
