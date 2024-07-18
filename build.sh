@@ -1,5 +1,7 @@
 set -e
 export LIBAVIF_VERSION=1.0.4
+export DAV1D_VERSION=1.4.3
+export LIBYUV_VERSION="a4ccf99"
 export WORK_PWD=${PWD}
 export REP_DAV1D="https://code.videolan.org/videolan/dav1d.git"
 export REP_LIBYUV="https://chromium.googlesource.com/libyuv/libyuv"
@@ -14,14 +16,14 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}" ]; then
 fi
 
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d" ]; then
-    git clone -b 1.4.1 --depth 1 ${REP_DAV1D} ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d
+    git clone -b ${DAV1D_VERSION} --depth 1 ${REP_DAV1D} ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d
     cp ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d/meson.build ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d/meson.back.build
 fi
 
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/libyuv" ]; then
     git clone --single-branch ${REP_LIBYUV} ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/libyuv
     cd ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/libyuv
-    git checkout 464c51a0
+    git checkout ${LIBYUV_VERSION}
 fi
 
 rm -rf libavif-${LIBAVIF_VERSION}/ext/dav1d/build
@@ -30,21 +32,23 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d/build" ]; then
     cd ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d
     mkdir build
     cd build
+    echo "------Compiler DAV1D'------"
     meson setup --default-library=static --buildtype release \
         --cross-file ${WORK_PWD}/cross_emscripten.ini \
-        -Denable_tools=false -Denable_tests=false -Dbitdepths=8 -Dlogging=false
+        -Denable_tools=false -Denable_tests=false -Dbitdepths=8 -Dlogging=false -Denable_asm=false
     ninja -j$(nproc)
 fi
 
 CMAKE_FLAGS=(
-    # -DCMAKE_C_FLAGS=-O3\ -flto
-    # -DCMAKE_CXX_FLAGS=-O3\ -flto
-    # -DCMAKE_EXE_LINKER_FLAGS=-O3\ -sASSERTIONS=0\ -sINLINING_LIMIT=1\ -flto
+    -DCMAKE_C_FLAGS=-msimd128
+    -DCMAKE_CXX_FLAGS=-msimd128
+    -DCMAKE_EXE_LINKER_FLAGS=-msimd128
 )
 
 rm -rf libavif-${LIBAVIF_VERSION}/ext/libyuv/build
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/libyuv/build" ]; then
     cd ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/libyuv
+    echo "------Compiler LIBYUV'------"
     emcmake cmake -S . -DCMAKE_BUILD_TYPE=Release -B build \
     "${CMAKE_FLAGS[@]}"
     make -C build -j$(nproc)
@@ -55,6 +59,7 @@ fi
 rm -rf "libavif-${LIBAVIF_VERSION}/build"
 if [ ! -d "libavif-${LIBAVIF_VERSION}/build" ]; then
     cd ${WORK_PWD}/libavif-${LIBAVIF_VERSION}
+    echo "------Compiler LIBAVIF'------"
     emcmake cmake -S . -B build \
         -DBUILD_SHARED_LIBS=OFF \
         -DAVIF_CODEC_DAV1D=ON \
@@ -138,6 +143,7 @@ emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/
     -s USE_ES6_IMPORT_META=0 \
     -s EXPORT_NAME='Libavif' \
     -s INLINING_LIMIT=1 \
+    -msimd128 \
     -O3 \
     -flto \
     -j$(nproc) \
