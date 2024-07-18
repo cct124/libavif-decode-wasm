@@ -1,4 +1,4 @@
-# Copyright © 2018-2022, VideoLAN and dav1d authors
+# Copyright © 2018-2024, VideoLAN and dav1d authors
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -23,7 +23,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 project('dav1d', ['c'],
-    version: '1.4.1',
+    version: '1.4.3',
     default_options: ['c_std=c99',
                       'warning_level=2',
                       'buildtype=release',
@@ -60,8 +60,6 @@ foreach bitdepth : ['8', '16']
     cdata.set10('CONFIG_@0@BPC'.format(bitdepth), dav1d_bitdepths.contains(bitdepth))
 endforeach
 
-# Disable ASM for Emscripten
-is_asm_enabled = false
 # ASM option
 is_asm_enabled = (get_option('enable_asm') == true and
     (host_machine.cpu_family() == 'aarch64' or
@@ -82,6 +80,8 @@ cdata.set10('TRIM_DSP_FUNCTIONS', get_option('trim_dsp') == 'true' or
 
 # Logging option
 cdata.set10('CONFIG_LOG', get_option('logging'))
+
+cdata.set10('CONFIG_MACOS_KPERF', get_option('macos_kperf'))
 
 #
 # OS/Compiler checks and defines
@@ -158,7 +158,7 @@ else
    #     endif
    #     cdata.set('HAVE_CLOCK_GETTIME', 1)
    # endif
-    
+
     if cc.has_function('posix_memalign', prefix : '#include <stdlib.h>', args : test_args)
         cdata.set('HAVE_POSIX_MEMALIGN', 1)
     endif
