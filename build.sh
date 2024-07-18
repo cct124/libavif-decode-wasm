@@ -1,5 +1,6 @@
 set -e
 export LIBAVIF_VERSION=1.0.4
+export DAV1D_VERSION=1.4.1
 export WORK_PWD=${PWD}
 export REP_DAV1D="https://code.videolan.org/videolan/dav1d.git"
 export REP_LIBYUV="https://chromium.googlesource.com/libyuv/libyuv"
@@ -14,7 +15,7 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}" ]; then
 fi
 
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d" ]; then
-    git clone -b 1.4.1 --depth 1 ${REP_DAV1D} ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d
+    git clone -b ${DAV1D_VERSION} --depth 1 ${REP_DAV1D} ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d
     cp ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d/meson.build ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d/meson.back.build
 fi
 
@@ -30,6 +31,7 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d/build" ]; then
     cd ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/dav1d
     mkdir build
     cd build
+    echo "------Compiler DAV1D'------"
     meson setup --default-library=static --buildtype release \
         --cross-file ${WORK_PWD}/cross_emscripten.ini \
         -Denable_tools=false -Denable_tests=false -Dbitdepths=8 -Dlogging=false
@@ -37,14 +39,15 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d/build" ]; then
 fi
 
 CMAKE_FLAGS=(
-    # -DCMAKE_C_FLAGS=-O3\ -flto
-    # -DCMAKE_CXX_FLAGS=-O3\ -flto
-    # -DCMAKE_EXE_LINKER_FLAGS=-O3\ -sASSERTIONS=0\ -sINLINING_LIMIT=1\ -flto
+    # -DCMAKE_C_FLAGS=-msimd128\ -sUSE_SSE=1
+    # -DCMAKE_CXX_FLAGS=-msimd128\ -sUSE_SSE=1
+    # -DCMAKE_EXE_LINKER_FLAGS=-msimd128\ -sUSE_SSE=1
 )
 
 rm -rf libavif-${LIBAVIF_VERSION}/ext/libyuv/build
 if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/libyuv/build" ]; then
     cd ${WORK_PWD}/libavif-${LIBAVIF_VERSION}/ext/libyuv
+    echo "------Compiler libyuv'------"
     emcmake cmake -S . -DCMAKE_BUILD_TYPE=Release -B build \
     "${CMAKE_FLAGS[@]}"
     make -C build -j$(nproc)
