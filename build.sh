@@ -144,6 +144,7 @@ emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/
     -s EXPORT_NAME='Libavif' \
     -s INLINING_LIMIT=1 \
     -msimd128 \
+    -mfpu=neon \
     -O3 \
     -flto \
     -j$(nproc) \
