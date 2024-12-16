@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.0.0)
 project(avifDecodeFileWeb VERSION 0.1.0 LANGUAGES C CXX)
 
 set(EMSCRIPTEN_HEADERS_DIR /root/emsdk/upstream/emscripten/cache/sysroot/include)
-set(LIBAVIF_LIBS_DIR libavif-1.0.4/build)
-set(LIBAVIF_HEADERS_DIR libavif-1.0.4/include)
+set(LIBAVIF_LIBS_DIR libavif-1.1.1/build)
+set(LIBAVIF_HEADERS_DIR libavif-1.1.1/include)
 
 add_library(libavif STATIC IMPORTED)
 set_target_properties(libavif PROPERTIES IMPORTED_LOCATION ${libavif_libs_DIR}/libavif.a)
