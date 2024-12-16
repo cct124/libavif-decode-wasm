@@ -40,9 +40,6 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d/build" ]; then
 fi
 
 CMAKE_FLAGS=(
-    -DCMAKE_C_FLAGS=-msimd128
-    -DCMAKE_CXX_FLAGS=-msimd128
-    -DCMAKE_EXE_LINKER_FLAGS=-msimd128
 )
 
 rm -rf libavif-${LIBAVIF_VERSION}/ext/libyuv/build
@@ -143,8 +140,6 @@ emcc build/lib${PROJECT_NAME}.a libavif-${LIBAVIF_VERSION}/build/libavif.a libav
     -s USE_ES6_IMPORT_META=0 \
     -s EXPORT_NAME='Libavif' \
     -s INLINING_LIMIT=1 \
-    -msimd128 \
-    -mfpu=neon \
     -O3 \
     -flto \
     -j$(nproc) \
