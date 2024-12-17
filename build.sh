@@ -35,14 +35,14 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d/build" ]; then
     echo "------Compiler DAV1D'------"
     meson setup --default-library=static --buildtype release \
         --cross-file ${WORK_PWD}/cross_emscripten.ini \
-        -Denable_tools=false -Denable_tests=false -Dbitdepths=8 -Dlogging=false -Denable_asm=false
+        -Denable_tools=false -Denable_tests=false -Dbitdepths=8 -Dlogging=false -Denable_asm=true
     ninja -j$(nproc)
 fi
 
 CMAKE_FLAGS=(
-    -DCMAKE_C_FLAGS="-msimd128 -mfpu=neon"
-    -DCMAKE_CXX_FLAGS="-msimd128 -mfpu=neon"
-    -DCMAKE_EXE_LINKER_FLAGS="-msimd128 -mfpu=neon"
+    -DCMAKE_C_FLAGS="-msimd128"
+    -DCMAKE_CXX_FLAGS="-msimd128"
+    -DCMAKE_EXE_LINKER_FLAGS="-msimd128"
 )
 
 rm -rf libavif-${LIBAVIF_VERSION}/ext/libyuv/build
