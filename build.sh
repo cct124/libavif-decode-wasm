@@ -40,9 +40,9 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d/build" ]; then
 fi
 
 CMAKE_FLAGS=(
-    -DCMAKE_C_FLAGS=-msimd128
-    -DCMAKE_CXX_FLAGS=-msimd128
-    -DCMAKE_EXE_LINKER_FLAGS=-msimd128
+    -DCMAKE_C_FLAGS="-msimd128 -mfpu=neon"
+    -DCMAKE_CXX_FLAGS="-msimd128 -mfpu=neon"
+    -DCMAKE_EXE_LINKER_FLAGS="-msimd128 -mfpu=neon"
 )
 
 rm -rf libavif-${LIBAVIF_VERSION}/ext/libyuv/build
