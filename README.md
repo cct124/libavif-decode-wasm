@@ -16,3 +16,30 @@ bash build.sh
 ```
 
 会在lib文件夹下生成js文件，Webassembly文件是内联到js文件中的
+
+## 其它
+
+### 安装 Cmake
+
+```shell
+sudo apt update
+sudo apt install cmake
+cmake --version
+```
+
+### 安装 Meson
+
+```shell
+sudo apt install python3 python3-pip python3-setuptools python3-wheel ninja-build
+sudo apt install meson
+meson --version
+```
+
+### 安装 Emscripten
+```shell
+git clone https://github.com/emscripten-core/emsdk.git
+cd emsdk
+./emsdk install latest
+./emsdk activate latest
+source ./emsdk_env.sh
+```

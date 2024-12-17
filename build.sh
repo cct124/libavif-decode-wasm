@@ -1,6 +1,6 @@
 set -e
-export LIBAVIF_VERSION=1.0.4
-export DAV1D_VERSION=1.4.3
+export LIBAVIF_VERSION=1.1.1
+export DAV1D_VERSION=1.5.0
 export LIBYUV_VERSION="a4ccf99"
 export WORK_PWD=${PWD}
 export REP_DAV1D="https://code.videolan.org/videolan/dav1d.git"
@@ -35,14 +35,14 @@ if [ ! -d "libavif-${LIBAVIF_VERSION}/ext/dav1d/build" ]; then
     echo "------Compiler DAV1D'------"
     meson setup --default-library=static --buildtype release \
         --cross-file ${WORK_PWD}/cross_emscripten.ini \
-        -Denable_tools=false -Denable_tests=false -Dbitdepths=8 -Dlogging=false -Denable_asm=false
+        -Denable_tools=false -Denable_tests=false -Dbitdepths=8 -Dlogging=false -Denable_asm=true
     ninja -j$(nproc)
 fi
 
 CMAKE_FLAGS=(
-    -DCMAKE_C_FLAGS=-msimd128
-    -DCMAKE_CXX_FLAGS=-msimd128
-    -DCMAKE_EXE_LINKER_FLAGS=-msimd128
+    -DCMAKE_C_FLAGS="-msimd128"
+    -DCMAKE_CXX_FLAGS="-msimd128"
+    -DCMAKE_EXE_LINKER_FLAGS="-msimd128"
 )
 
 rm -rf libavif-${LIBAVIF_VERSION}/ext/libyuv/build
@@ -128,7 +128,7 @@ export EXPORTED_FUNCTIONS="[ \
     '_avifSetDecoderExifXMP'
 ]"
 
-emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/libyuv/build/libyuv.a libavif-1.0.4/ext/dav1d/build/src/libdav1d.a \
+emcc build/lib${PROJECT_NAME}.a libavif-${LIBAVIF_VERSION}/build/libavif.a libavif-${LIBAVIF_VERSION}/ext/libyuv/build/libyuv.a libavif-${LIBAVIF_VERSION}/ext/dav1d/build/src/libdav1d.a \
     -s WASM=1 \
     -s WASM_ASYNC_COMPILATION=1 \
     -s ALLOW_MEMORY_GROWTH=1 \
@@ -144,6 +144,7 @@ emcc build/lib${PROJECT_NAME}.a libavif-1.0.4/build/libavif.a libavif-1.0.4/ext/
     -s EXPORT_NAME='Libavif' \
     -s INLINING_LIMIT=1 \
     -msimd128 \
+    -mfpu=neon \
     -O3 \
     -flto \
     -j$(nproc) \
